@@ -1,4 +1,4 @@
-package wakaexporter
+package client
 
 import (
 	"context"
@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/j2gg0s/wakaexporter/pkg/model"
 )
 
 const addr = "https://wakatime.com/api/v1/users"
 
-func ListHeartbeat(ctx context.Context, apiKey string, date time.Time) ([]Heartbeat, error) {
+func ListHeartbeat(ctx context.Context, apiKey string, date time.Time) ([]model.Heartbeat, error) {
 	params := url.Values{}
 	params.Set("date", date.Format("2006-01-02"))
 
@@ -33,7 +35,7 @@ func ListHeartbeat(ctx context.Context, apiKey string, date time.Time) ([]Heartb
 	}
 
 	body := struct {
-		Heartbeats []Heartbeat `json:"data"`
+		Heartbeats []model.Heartbeat `json:"data"`
 	}{}
 	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
 		return nil, fmt.Errorf("unmarshal json with error: %w", err)
