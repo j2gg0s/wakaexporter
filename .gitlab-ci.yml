@@ -21,8 +21,7 @@ build:
     - docker:20-dind
 
   before_script:
-    - export DATE=$(date +"%Y-%m-%d")
-    - export IMAGE_TAG=$RELEASE-$DATE-$CI_COMMIT_SHORT_SHA
+    - export IMAGE_TAG=$RELEASE-$CI_COMMIT_SHORT_SHA
     - export IMAGE=$IMAGE_REGISTRY/$IMAGE_NAMESPACE/$IMAGE_NAME
 
     - export DOCKER_TLS_CERTDIR=/certs
@@ -43,8 +42,7 @@ deploy:
     entrypoint: ["/bin/sh", "-c"]
 
   before_script:
-    - export DATE=$(date +"%Y-%m-%d")
-    - export IMAGE_TAG=$RELEASE-$DATE-$CI_COMMIT_SHORT_SHA
+    - export IMAGE_TAG=$RELEASE-$CI_COMMIT_SHORT_SHA
     - export IMAGE=$IMAGE_REGISTRY/$IMAGE_NAMESPACE/$IMAGE_NAME
 
     - echo $G_KUBE_CONFIG | base64 -d > $KUBECONFIG
