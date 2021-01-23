@@ -2,6 +2,7 @@ package wakaexporter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"strings"
@@ -65,6 +66,9 @@ func SyncHeartbeat(ctx context.Context, db pgorm.DB, apiKey string) error {
 
 func StatsdHeartbeats(ctx context.Context, hbs []model.Heartbeat) ([]model.Metric, error) {
 	metrics := []model.Metric{}
+	if len(hbs) == 0 {
+		return metrics, nil
+	}
 
 	var x, y model.Heartbeat
 	var xProj, yProj string
@@ -115,7 +119,9 @@ func getProject(h model.Heartbeat, curr string) string {
 
 func SyncMetric(ctx context.Context, db pgorm.DB) error {
 	m, err := orm.GetLastMetric(ctx, db)
-	if err != nil {
+	if err != nil && errors.Is(err, pg.ErrNoRows) {
+		m = &model.Metric{Time: time.Now().Add(-1 * time.Hour * 24 * 30 * 3)}
+	} else if err != nil {
 		return err
 	}
 
