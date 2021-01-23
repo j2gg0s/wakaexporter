@@ -25,7 +25,7 @@ build:
     - export IMAGE=$IMAGE_REGISTRY/$IMAGE_NAMESPACE/$IMAGE_NAME
 
     - export DOCKER_TLS_CERTDIR=/certs
-    - echo $G_DOCKER_PWD | docker login -u $G_DOCKER_USER $IMAGE_REGISTRY --password-stdin
+    - docker login -u $G_DOCKER_USER $IMAGE_REGISTRY -p $G_DOCKER_PWD
 
   script:
     - docker build -t $IMAGE:$IMAGE_TAG .
