@@ -103,11 +103,13 @@ func StatsdHeartbeats(ctx context.Context, hbs []model.Heartbeat) ([]model.Metri
 
 func getProject(h model.Heartbeat, curr string) string {
 	p := h.Project
-	if h.Category == "browsing" {
+	if p == "" {
 		p = h.Entity
-	} else if p == "" && (strings.Contains(h.Entity, "/go/pkg") || strings.Contains(h.Entity, "/go/src")) {
+	}
+	if p == "" && (strings.Contains(h.Entity, "/go/pkg") || strings.Contains(h.Entity, "/go/src")) {
 		p = curr
 	}
+
 	return p
 }
 
