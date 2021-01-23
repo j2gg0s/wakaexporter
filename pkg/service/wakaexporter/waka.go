@@ -10,6 +10,7 @@ import (
 	"k8s.io/client-go/util/retry"
 
 	"github.com/go-pg/pg/v10"
+	pgorm "github.com/go-pg/pg/v10/orm"
 	"github.com/j2gg0s/wakaexporter/pkg/client"
 	"github.com/j2gg0s/wakaexporter/pkg/model"
 	"github.com/j2gg0s/wakaexporter/pkg/orm"
@@ -19,7 +20,9 @@ import (
 // don't sync data within 10m
 var minDuration = 10 * time.Minute
 
-func SyncHeartbeat(ctx context.Context, db *pg.DB, apiKey string) error {
+var timeoutSecond = 120 * 30.0
+
+func SyncHeartbeat(ctx context.Context, db pgorm.DB, apiKey string) error {
 	hb, err := orm.GetLastHeartbeat(ctx, db)
 	if err != nil {
 		log.Err(err).Send()
@@ -69,10 +72,7 @@ func StatsdHeartbeats(ctx context.Context, hbs []model.Heartbeat) ([]model.Metri
 	for i := 1; i < len(hbs); i += 1 {
 		y, yProj = hbs[i], getProject(hbs[i], xProj)
 		// wakatime send heartbeat every 120 second
-		if xProj == yProj && y.Time-x.Time > 120 {
-			if (y.Time - x.Time) > 120*1.25 {
-				log.Warn().Msgf("duration is too bigger: %f", y.Time-x.Time)
-			}
+		if y.Time-x.Time > timeoutSecond {
 			x, xProj = y, yProj
 			continue
 		}
@@ -111,7 +111,7 @@ func getProject(h model.Heartbeat, curr string) string {
 	return p
 }
 
-func SyncMetric(ctx context.Context, db *pg.DB) error {
+func SyncMetric(ctx context.Context, db pgorm.DB) error {
 	m, err := orm.GetLastMetric(ctx, db)
 	if err != nil {
 		return err
@@ -137,4 +137,28 @@ func SyncMetric(ctx context.Context, db *pg.DB) error {
 	log.Debug().Msgf("insert %d metric with %d heartbeats", rows, len(hbs))
 
 	return nil
+}
+
+func RefreshMetric(ctx context.Context, db *pg.DB, from, to time.Time) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("begin transaction with error: %w", err)
+	}
+	defer tx.Close()
+
+	_, err = tx.Exec("DELETE FROM metric_values WHERE time >= ? and time <= ?", from, to)
+	if err != nil {
+		return fmt.Errorf("delete from metric_value with error: %w", err)
+	}
+
+	err = SyncMetric(ctx, tx)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("commit transaction with error: %w", err)
+	}
+	return err
 }
