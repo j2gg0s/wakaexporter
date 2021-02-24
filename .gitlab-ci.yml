@@ -42,7 +42,7 @@ deploy:
 
   before_script:
     - export IMAGE_TAG=$RELEASE-$CI_COMMIT_SHORT_SHA
-    - export IMAGE=$IMAGE_REGISTRY/$IMAGE_NAMESPACE/$IMAGE_NAME
+    - export IMAGE=$G_IMAGE_REGISTRY/$IMAGE_NAMESPACE/$IMAGE_NAME
 
     - echo $G_KUBE_CONFIG | base64 -d > $KUBECONFIG
     - helm repo add $CHART_ALIAS $CHART_REPO
