@@ -3,6 +3,8 @@ WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'wakatime')\gexec
 
 \c wakatime
 
+SET client_min_messages TO WARNING;
+
 CREATE OR REPLACE FUNCTION trigger_set_timestamp()
 RETURNS TRIGGER
 LANGUAGE plpgsql
