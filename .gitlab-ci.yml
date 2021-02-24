@@ -7,7 +7,6 @@ variables:
   CHART_ALIAS: j2gg0s
   CHART_REPO: https://j2gg0s.gitlab.io/chart
 
-  IMAGE_REGISTRY: registry.cn-huhehaote.aliyuncs.com
   IMAGE_NAMESPACE: j2gg0s
   IMAGE_NAME: default
 
@@ -22,10 +21,10 @@ build:
 
   before_script:
     - export IMAGE_TAG=$RELEASE-$CI_COMMIT_SHORT_SHA
-    - export IMAGE=$IMAGE_REGISTRY/$IMAGE_NAMESPACE/$IMAGE_NAME
+    - export IMAGE=$G_IMAGE_REGISTRY/$IMAGE_NAMESPACE/$IMAGE_NAME
 
     - export DOCKER_TLS_CERTDIR=/certs
-    - docker login -u $G_DOCKER_USER $IMAGE_REGISTRY -p $G_DOCKER_PWD
+    - docker login -u $G_DOCKER_USER $G_IMAGE_REGISTRY -p $G_DOCKER_PWD
 
   script:
     - docker build -t $IMAGE:$IMAGE_TAG .
